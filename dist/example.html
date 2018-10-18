@@ -4,18 +4,17 @@
 	<title>example setup</title>
 	<style type="text/css">
 
-		.masonry--item .masonry--item__drawer{
-			display: none;
-		}
+		/* these styles are mandatory */
 		.masonry--item{
 			width: 25%;
 			display: inline-block;
 			vertical-align: top;
 		}
-
-		#filters{
-
+		.masonry--item .masonry--item__drawer{
+			display: none;
 		}
+
+		/* these styles are just used for the example */
 		.masonry--filter__category{
 			background: grey;
 			display: inline-block;
@@ -85,13 +84,13 @@
 
 </div>
 
-<script type="text/javascript" src="dist/Masonry.js"></script>
-<script type="text/javascript" src="dist/MasonryPluginDrawer.js"></script>
+<script type="text/javascript" src="Masonry.js"></script>
+<script type="text/javascript" src="MasonryPluginDrawer.js"></script>
 <script type="text/javascript">
 	var element = document.getElementById("masonry");
 	var options = {
 		sameHeight: false,
-		// plugins: [MasonryPluginDrawer],
+		plugins: [MasonryPluginDrawer],
 		filterContainer: document.getElementById("filters")
 	}
 	var masonry = new Masonry( element, options );
