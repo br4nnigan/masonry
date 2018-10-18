@@ -20,6 +20,12 @@ If you want to use a static css layout (probably using `text-align: justify`). T
 
 Items of one row are set to have the same height (min-height actually), instead of being aligned vertically.
 
+*onBeforeCategoryChange : Void -> Void*
+
+Function called before a category changes
+
+
+
 #### Filter categories
 
 Items may have the dom attribute `data-category` set and masonry will create a list of filter buttons.
@@ -49,3 +55,7 @@ returns the number of columns of the masonry
 `masonry.setOption( key, value )`
 
 setting an option on the instance. Not sure currently why one would do this.
+
+#### events
+
+onBeforeCategoryChange
