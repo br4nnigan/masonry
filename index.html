@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>example setup</title>
+	<style type="text/css">
+
+		.masonry--item .masonry--item__drawer{
+			display: none;
+		}
+		.masonry--item{
+			width: 25%;
+			display: inline-block;
+			vertical-align: top;
+		}
+
+		#filters{
+
+		}
+		.masonry--filter__category{
+			background: grey;
+			display: inline-block;
+			padding: 5px;
+			margin: 5px;
+			color: white;
+			cursor: pointer;
+		}
+	</style>
+</head>
+<body>
+
+
+<div id="masonry">
+	<div class="masonry--items" style="position: relative">
+
+		<div class="masonry--item" data-category="red item" style="background: red; height: 50px">
+			<div class="masonry--item__drawer">1</div>
+		</div>
+
+		<div class="masonry--item" data-category="blue item" style="background: blue; height: 120px">
+			<div class="masonry--item__drawer">2</div>
+		</div>
+
+		<div class="masonry--item" data-category="green item" style="background: green; height: 110px">
+			<div class="masonry--item__drawer">3</div>
+		</div>
+
+		<div class="masonry--item" data-category="blue item" style="background: blue; height: 20px">
+			<div class="masonry--item__drawer">4</div>
+		</div>
+
+		<div class="masonry--item" data-category="green item" style="background: green; height: 100px">
+			<div class="masonry--item__drawer">5</div>
+		</div>
+
+		<div class="masonry--item" data-category="red item" style="background: red; height: 50px">
+			<div class="masonry--item__drawer">6</div>
+		</div>
+
+		<div class="masonry--item" data-category="blue item" style="background: blue; height: 80px">
+			<div class="masonry--item__drawer">7</div>
+		</div>
+
+		<div class="masonry--item" data-category="red item" style="background: red; height: 90px">
+			<div class="masonry--item__drawer">8</div>
+		</div>
+
+		<div class="masonry--item" data-category="blue item"  style="background: blue; height: 80px">
+			<div class="masonry--item__drawer">9</div>
+		</div>
+
+		<div class="masonry--item" data-category="green item" style="background: green; height: 140px">
+			<div class="masonry--item__drawer">10</div>
+		</div>
+
+		<div class="masonry--item" data-category="red item" style="background: red; height: 110px">
+			<div class="masonry--item__drawer">11</div>
+		</div>
+
+
+	</div>
+
+	<div id="filters">
+		Categories:
+	</div>
+
+</div>
+
+<script type="text/javascript" src="dist/Masonry.js"></script>
+<script type="text/javascript" src="dist/MasonryPluginDrawer.js"></script>
+<script type="text/javascript">
+	var element = document.getElementById("masonry");
+	var options = {
+		sameHeight: false,
+		// plugins: [MasonryPluginDrawer],
+		filterContainer: document.getElementById("filters")
+	}
+	var masonry = new Masonry( element, options );
+</script>
+</body>
+</html>

@@ -23,6 +23,6 @@
     "promise-polyfill": "^6.0.2"
   },
   "scripts": {
-    "postinstall": "browserify src/Masonry.js > dist/Masonry.js"
+    "postinstall": "browserify src/Masonry.js > dist/Masonry.js && browserify src/MasonryPluginDrawer.js > dist/MasonryPluginDrawer.js"
   }
 }

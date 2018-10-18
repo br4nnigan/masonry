@@ -7,14 +7,14 @@ this is a light weight replacement for the popular Masonry javascript plugin. It
 
 `var masonry = new Masonry( element, options )`
 
-accepts a root Element and and an options object.
+accepts a root element and and an options object. Masonry items are queried within the root element using the selector `.masonry--item`. They must have the attributes `display: inline-block` and `vertical-align: top` and should have a `width` set in `%`
 
 
 #### options
 
-*staticLayout : Boolean*
+*filterContainer : Element*
 
-If you want to use a static css layout (probably using `text-align: justify`). The Masonry takes care of placeholders and white space to make it work.
+If you want to work with categories you can specify a container element here. Otherwise it will be added to the root element.
 
 *sameHeight : Boolean*
 
@@ -24,7 +24,15 @@ Items of one row are set to have the same height (min-height actually), instead 
 
 Function called before a category changes
 
+*plugins : Array*
 
+Array of plugins to use (see below).
+
+#### Plugins
+
+*MasonryPluginDrawer*
+
+On click of an item toggles a drawer below in a new row. The drawer dom element must exist within the item element and have the class `masonry--item__drawer` and should be `display: none`. This currently only works when the sameHeight option is used.
 
 #### Filter categories
 
@@ -55,6 +63,10 @@ returns the number of columns of the masonry
 `masonry.setOption( key, value )`
 
 setting an option on the instance. Not sure currently why one would do this.
+
+`masonry.getOption( key )`
+
+getting an option on the instance.
 
 #### events
 

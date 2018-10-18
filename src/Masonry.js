@@ -7,9 +7,11 @@ var Promise = require("promise-polyfill");
 function Masonry( element, opts ) {
 
 	var containerItems = null;
+	var justifyFixDiv = null;
 	var columns = null;
 	var filter = null;
 	var categories = null;
+	var whitespace = null;
 	var category = "";
 	var labels = {
 		ALL: "all"
@@ -22,6 +24,7 @@ function Masonry( element, opts ) {
 		CATEGORY_ACTIVE: "masonry--filter__category--active",
 		ITEM: "masonry--item",
 		ITEM_HIDDEN: "masonry--item--hidden",
+		JUSTIFY_FIX: "masonry--justifyfix",
 		ITEM_PLACEHOLDER: "masonry--item--placeholder"
 	}
 
@@ -47,6 +50,17 @@ function Masonry( element, opts ) {
 		api.setOption = function (key, value) {
 			options[key] = value;
 		}
+		api.getOption = function (key) {
+			return options[key];
+		}
+
+	function createJustifyFixDiv() {
+		justifyFixDiv = document.createElement("div");
+		justifyFixDiv.classList.add( classes.JUSTIFY_FIX );
+		justifyFixDiv.style.display = "inline-block";
+		justifyFixDiv.style.width = "100%";
+		containerItems.appendChild( justifyFixDiv );
+	}
 
 	function initialize() {
 
@@ -58,17 +72,27 @@ function Masonry( element, opts ) {
 		}
 
 		var items = getItems(true);
-
 		if ( !items.length ) return;
 
+
 		containerItems = items[0].parentNode;
+		if ( containerItems ) {
 
-		if ( !containerItems ) return;
-
-		if ( typeof options.staticLayout != "boolean" ) {
-
-			options.staticLayout = containerItems.classList.contains("masonry--items--static");
+			containerItems.style.textAlign = "justify";
+			createJustifyFixDiv();
+		} else {
+			return;
 		}
+
+		if ( !getItemsHaveSameWidth() ) {
+
+			console.error("items need to have same width");
+			return;
+		}
+		whitespace = getNeedsWhiteSpace();
+
+
+
 		if ( typeof options.sameHeight != "boolean" ) {
 
 			options.sameHeight = containerItems.classList.contains("masonry--items--sameheight");
@@ -82,7 +106,11 @@ function Masonry( element, opts ) {
 
 		initializeFilter( items );
 
+		if ( !whitespace) {
+			justifyFix();
+		}
 		columns = getColumns();
+
 		update();
 
 		Static.each(items, function (item) {
@@ -93,15 +121,6 @@ function Masonry( element, opts ) {
 					img.addEventListener("load", onImageLoad);
 				});
 			}
-
-			if ( !options.staticLayout ) {
-
-				if ( !item.nextSibling ) {
-					containerItems.appendChild(document.createTextNode(" "));
-				} else if ( item.nextSibling.nodeType != 3 ) {
-					containerItems.insertBefore(document.createTextNode(" "), item.nextSibling);
-				}
-			}
 		});
 
 		element.classList.add(classes.INITIALIZED);
@@ -110,7 +129,7 @@ function Masonry( element, opts ) {
 			items.map(function (item) {
 				return transition(item, styles.visible, 300);
 			})
-		).then(update);
+		);
 
 		addGlobalListeners();
 	}
@@ -143,7 +162,7 @@ function Masonry( element, opts ) {
 
 			if ( categories.length > 1 ) {
 
-				var filterContainer = document.createElement("div");
+				var filterContainer = options.filterContainer || document.createElement("div");
 					filterContainer.className = classes.FILTER;
 
 				categories.push( labels.ALL );
@@ -158,10 +177,13 @@ function Masonry( element, opts ) {
 					hammerInstances.push(hammer);
 					filterContainer.appendChild(category);
 				}
-				categories = Array.prototype.slice.call(filterContainer.childNodes);
+				categories = Array.prototype.slice.call(filterContainer.children);
 
 				setActiveCategory(labels.ALL);
-				element.insertBefore(filterContainer, element.childNodes[0])
+
+				if ( !options.filterContainer ) {
+					element.insertBefore(filterContainer, element.childNodes[0])
+				}
 			}
 		}
 	}
@@ -196,6 +218,8 @@ function Masonry( element, opts ) {
 			}
 			removePlaceholders();
 		}
+		justifyFix();
+
 		return columns;
 	}
 
@@ -204,40 +228,48 @@ function Masonry( element, opts ) {
 		var items = getItems();
 
 		if ( items.length % columns != 0 ) {
-			removePlaceholders();
+			removePlaceholders(2);
 
 			for (var i = 0; i < columns - (items.length % columns); i++) {
 				addPlaceHolder(items);
 			}
 		}
 
-		Static.each(containerItems.childNodes, function (node) {
+		var l = containerItems.childNodes.length;
+		for (var i = 0, node; i < l; i++) {
+
+			node = containerItems.childNodes[i];
+			if ( ! node ) {
+				continue;
+			}
 
 			if ( node.nodeType === 3 ) {
 
-				if ( options.staticLayout ) {
+				if ( !whitespace ) {
 
 					// remove text node
 					node.parentNode.removeChild( node );
-					return;
+					i--;
+					continue;
 				}
 				node.textContent = " ";
 
 				if ( node.nextSibling && node.nextSibling.nodeType === 3 ) {
 					// avoid 2 adjacent text nodes
 					node.nextSibling.parentNode.removeChild( node.nextSibling );
+					i--;
 				}
 			}
 
-			if ( node.nodetype === 1 ) {
+			if ( node.nodetype === 1 && items.indexOf(node) != -1 ) {
 
-				if ( !options.staticLayout && node.nextSibling && node.nextSibling.nodeType === 1 ) {
+				if ( whitespace && node.nextSibling && node.nextSibling.nodeType === 1 ) {
 
 					// add missing text node
 					node.parentNode.insertBefore(document.createTextNode(" "), node.nextSibling);
 				}
 			}
-		});
+		}
 	}
 
 	function addPlaceHolder(items) {
@@ -249,21 +281,27 @@ function Masonry( element, opts ) {
 			el.classList.add(classes.ITEM_PLACEHOLDER);
 			el.style.visibility = "hidden";
 
-		if ( !options.staticLayout && containerItems.lastChild.nodeType != 3 ) {
+		if ( whitespace && containerItems.lastChild.nodeType != 3 ) {
 			containerItems.appendChild(document.createTextNode(" "));
 		}
 		containerItems.appendChild(el);
 	}
 
+	// visual optimization: swaps placeholder and item of shortest column if that would even out the column heights
 	function flowFix() {
 
 		var itemsLastRow = [];
 		var items = getItems( true );
 
+		if ( justifyFixDiv.parentNode ) {
+			containerItems.removeChild(justifyFixDiv); // this messes up this method, so I remove it for now...
+		}
+
 		for (var i = 0, child; i < items.length; i++) {
 
 			child = items[i];
 			if ( i >= items.length - columns) {
+				// console.log('test', child);
 				itemsLastRow.push({
 					element: child,
 					offset: parseInt(child.style.marginTop) || 0,
@@ -281,7 +319,7 @@ function Masonry( element, opts ) {
 				item = child;
 
 			} else if ( child.placeholder && item ) {
-// console.log(child.offset , item.offset);
+
 				if ( child.offset < item.offset ) {
 
 					DomUtils.swapChildren(child.element, item.element);
@@ -292,6 +330,8 @@ function Masonry( element, opts ) {
 				}
 			}
 		}
+
+		createJustifyFixDiv();
 	}
 
 	function getItems( includePlaceholders, includeHidden ) {
@@ -312,7 +352,7 @@ function Masonry( element, opts ) {
 		});
 	}
 
-	function removePlaceholders() {
+	function removePlaceholders(a) {
 
 		Static.each(containerItems.querySelectorAll("." + classes.ITEM_PLACEHOLDER), function (placeholder) {
 			placeholder.parentNode.removeChild(placeholder);
@@ -320,8 +360,6 @@ function Masonry( element, opts ) {
 	}
 
 	function layout(reset) {
-
-		if ( options.staticLayout ) return;
 
 		var items = getItems(true);
 
@@ -368,8 +406,6 @@ function Masonry( element, opts ) {
 
 	function layoutVerticalPosition(items, reset) {
 
-		// console.log("layoutVerticalPosition", items, reset, columns);
-
 		Static.each(items, function (item, i) {
 
 			if ( columns === 1 || i < columns || reset) {
@@ -381,7 +417,7 @@ function Masonry( element, opts ) {
 			var itemAbove = items[i - columns];
 			var curr = parseInt(item.style.marginTop) || 0;
 			var dif = Math.floor(item.offsetTop - itemAbove.offsetTop - itemAbove.offsetHeight - parseInt(getComputedStyle(itemAbove).getPropertyValue("margin-bottom")));
-			// console.log("layout", curr - dif, curr, dif, item, itemAbove, item.offsetTop, itemAbove.offsetTop, itemAbove.offsetHeight);
+
 			item.style.marginTop =  (curr - dif) + "px";
 		});
 	}
@@ -396,7 +432,6 @@ function Masonry( element, opts ) {
 				category.classList.remove(classes.CATEGORY_ACTIVE);
 			}
 		});
-
 	}
 
 	function onCategoryClick(e) {
@@ -444,11 +479,44 @@ function Masonry( element, opts ) {
 
 		if ( itemCategory != category && category != labels.ALL ) {
 			item.classList.add(classes.ITEM_HIDDEN);
+			item.style.display = "none";
 			return false;
 		}
 		item.classList.remove(classes.ITEM_HIDDEN);
+		item.style.display = "";
+
 		return true;
 
+	}
+
+	// if item colums dont add up to 100% (2px tolerance because render engines), we probably need white space
+	function getNeedsWhiteSpace(){
+		var needsWhiteSpace = false;
+		var items = getItems(true);
+		if ( !items.length || !containerItems ) return;
+
+		var itemWidth = items[0].offsetWidth;
+		var containerWidth = containerItems.offsetWidth;
+
+		var modWidth = containerWidth%itemWidth;
+		if ( modWidth > 2 && modWidth < itemWidth - 2 ) {
+
+			needsWhiteSpace = true;
+		}
+		return needsWhiteSpace;
+	}
+
+	function getItemsHaveSameWidth() {
+		var itemsHaveSameWidth = true;
+		Static.each(getItems(true), function (item, i, items) {
+			var nextItem = items[i+1];
+			if ( nextItem ) {
+				if ( Math.abs(item.offsetWidth - nextItem.offsetWidth) > 1 ) {
+					itemsHaveSameWidth = false;
+				}
+			}
+		});
+		return itemsHaveSameWidth;
 	}
 
 	function onImageLoad() {
@@ -464,7 +532,6 @@ function Masonry( element, opts ) {
 
 	return initialize(), api;
 }
-if ( typeof module == "object" ) {
-	module.exports = Masonry;
-}
+module.exports = window.Masonry = Masonry;
+
 
