@@ -321,7 +321,7 @@ function Masonry( element, opts ) {
 
 					layout();
 					flowFix();
-					break;
+					return;
 				}
 			}
 		}
