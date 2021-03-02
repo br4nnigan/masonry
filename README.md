@@ -1,4 +1,4 @@
-this is a light weight replacement for the popular Masonry javascript plugin. It's only supposed to handle items of same width, so it adjust each rows height OR shifts each columns items vertically, so all items have a common vertical margin.
+this is a light weight replacement for the popular Masonry javascript plugin. It's only supposed to handle items of same width, so it adjusts each rows height OR shifts each columns items vertically, so all items have a common vertical margin. Also features a filter based on custom categories.
 
 ### Usage
 
