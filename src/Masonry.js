@@ -1,4 +1,3 @@
-var Hammer = require("hammerjs");
 var transition = require("css-transition");
 var Static = require("Static.js");
 var DomUtils = Static.dom;
@@ -38,8 +37,6 @@ function Masonry( element, opts ) {
 			transform: "scale(0.8)"
 		}
 	}
-
-	var hammerInstances = [];
 
 	var api = Object.create(Masonry);
 		api.getItems = getItems;
@@ -140,10 +137,8 @@ function Masonry( element, opts ) {
 
 	function removeGlobalListeners() {
 		window.removeEventListener("resize", onWindowResize);
-		hammerInstances = hammerInstances.filter(function (hammer) {
-			if ( hammer ) {
-				hammer.destroy();
-			}
+		Static.each(categories, function (el) {
+			Static.dom.detachListener(el, "click", onCategoryClick);
 		});
 	}
 
@@ -173,8 +168,7 @@ function Masonry( element, opts ) {
 					category.classList.add(classes.CATEGORY);
 					category.textContent = categories[i];
 					category.setAttribute("data-category", categories[i]);
-					hammer = new Hammer(category).on("tap", onCategoryClick );
-					hammerInstances.push(hammer);
+					Static.dom.attachListener(category, "click", onCategoryClick);
 					filterContainer.appendChild(category);
 				}
 				categories = Array.prototype.slice.call(filterContainer.children);
