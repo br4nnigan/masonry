@@ -40,6 +40,7 @@ function Masonry( element, opts ) {
 
 	var api = Object.create(Masonry);
 		api.getItems = getItems;
+		api.setActiveCategory = setActiveCategory;
 		api.destroy = removeGlobalListeners;
 		api.getColumns = function () {
 			return columns || 0;
@@ -173,7 +174,7 @@ function Masonry( element, opts ) {
 				}
 				categories = Array.prototype.slice.call(filterContainer.children);
 
-				setActiveCategory(labels.ALL);
+				setActiveCategory(options.activeCategory || labels.ALL);
 
 				if ( !options.filterContainer ) {
 					element.insertBefore(filterContainer, element.childNodes[0])
@@ -416,18 +417,6 @@ function Masonry( element, opts ) {
 		});
 	}
 
-	function setActiveCategory(value) {
-		// console.log("setActiveCategory", value);
-		categories.map(function (category) {
-			if ( category.textContent == value ) {
-				element.setAttribute("data-category", value);
-				category.classList.add(classes.CATEGORY_ACTIVE);
-			} else {
-				category.classList.remove(classes.CATEGORY_ACTIVE);
-			}
-		});
-	}
-
 	function onCategoryClick(e) {
 
 		if ( typeof options.onBeforeCategoryChange == "function" ) {
@@ -438,28 +427,43 @@ function Masonry( element, opts ) {
 		if ( selected != category ) {
 
 			setActiveCategory(selected);
+		}
+	}
 
-			var items = getItems();
+	function setActiveCategory(value) {
+
+		categories.map(function (category) {
+			if ( category.textContent == value ) {
+				element.setAttribute("data-category", value);
+				category.classList.add(classes.CATEGORY_ACTIVE);
+			} else {
+				category.classList.remove(classes.CATEGORY_ACTIVE);
+			}
+		});
+		category = value;
+
+		updateItemVisibility();
+	}
+
+	function updateItemVisibility() {
+
+		var items = getItems();
+
+		Promise.all(
+			getItems(false, true).map(function (item) {
+				return transition(item, styles.hidden, 200);
+			})
+		).then(function () {
+			items = getItems(false, true).filter(setItemVisibility);
+
+			update();
 
 			Promise.all(
 				items.map(function (item) {
-					return transition(item, styles.hidden, 200);
+					return transition(item, styles.visible, 200);
 				})
-			).then(function () {
-
-				category = selected;
-
-				items = getItems(false, true).filter(setItemVisibility);
-
-				update();
-
-				Promise.all(
-					items.map(function (item) {
-						return transition(item, styles.visible, 200);
-					})
-				);
-			});
-		}
+			);
+		});
 	}
 
 	function setItemClass(item) {
